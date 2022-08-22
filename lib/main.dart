@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:widgettest/store/store.dart';
-import 'package:widgettest/widgets/bottomsheet_widget.dart';
-import 'package:widgettest/widgets/pulltorefresh_widget.dart';
-import 'package:widgettest/widgets/storecount_widget.dart';
+import 'package:widgettest/widgets/pulltorefreshorsearch_widget.dart';
+import 'package:widgettest/widgets/timer_widget.dart';
 
 void main() {
   runApp(VxState(store: MyStore(), child: const MyApp()));
@@ -20,7 +19,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter Widget Test App'),
     );
   }
 }
@@ -41,11 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // MyStore store = VxState.store;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: const PullToRefreshWidget() 
+    return const Scaffold(
+      body:  TimerWidget() 
     );
   }
 }

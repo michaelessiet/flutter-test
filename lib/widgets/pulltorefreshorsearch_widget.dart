@@ -19,7 +19,6 @@ class PullToRefreshWidget extends StatefulWidget {
 class _PullToRefreshWidgetState extends State<PullToRefreshWidget>
     with SingleTickerProviderStateMixin {
   final _scrollController = ScrollController();
-  // late AnimationController _animationController;
   Control animationControl = Control.stop;
   double positionOffset = -20;
   double searchRadius = 50;
@@ -29,9 +28,6 @@ class _PullToRefreshWidgetState extends State<PullToRefreshWidget>
   bool searchVisible = false;
   late FocusNode searchFocusNode;
 
-  double refreshHighlightedPosition = 147.71;
-  double searchHighlightedPosition = 177.71;
-  double arrowposition = 147.71;
   GlobalKey circlekey = GlobalKey();
   GlobalKey searchCircleKey = GlobalKey();
 
@@ -49,69 +45,58 @@ class _PullToRefreshWidgetState extends State<PullToRefreshWidget>
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     searchFocusNode.dispose();
+  }
+
+  void handleSwipeGesture(PointerMoveEvent event) {
+    if (event.position.dx > 200) {
+      if (_scrollController.offset < -20) {
+        setState(() {
+          searchRadius = 70;
+          searchColor = Colors.blue[600]!;
+          refreshColor = Colors.blue[200]!;
+          refreshRadius = 50;
+          animationControl = Control.play;
+        });
+      }
+    } else {
+      if (_scrollController.offset < -20) {
+        setState(() {
+          refreshRadius = 70;
+          refreshColor = Colors.blue[600]!;
+          searchColor = Colors.blue[200]!;
+          searchRadius = 50;
+          animationControl = Control.playReverse;
+        });
+      }
+    }
+  }
+
+  void handleGestureOver(PointerUpEvent event) {
+    if (searchRadius == 70) {
+      setState(() {
+        searchVisible = true;
+        searchRadius = 50;
+      });
+      searchFocusNode.requestFocus();
+    } else {
+      setState(() {
+        searchVisible = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onPanUpdate: (details) {
-        // print(details.delta.dx);
-      },
       child: VxScrollVertical(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         controller: _scrollController,
         child: ZStack([
           Listener(
-            onPointerMove: (event) {
-              RenderBox circle =
-                  circlekey.currentContext!.findRenderObject() as RenderBox;
-              RenderBox searchCircle = searchCircleKey.currentContext!
-                  .findRenderObject() as RenderBox;
-              double searchPosition =
-                  searchCircle.localToGlobal(Offset.zero).dx + 22;
-              double refreshPosition =
-                  circle.localToGlobal(Offset.zero).dx + 22;
-              if (event.position.dx > 200) {
-                if (_scrollController.offset < -20) {
-                  setState(() {
-                    searchRadius = 70;
-                    searchColor = Colors.blue[600]!;
-                    refreshColor = Colors.blue[200]!;
-                    refreshRadius = 50;
-                    arrowposition = searchPosition;
-                    animationControl = Control.play;
-                    // arrowAnimationController.value = 200;
-                  });
-                }
-              } else {
-                if (_scrollController.offset < -20) {
-                  setState(() {
-                    refreshRadius = 70;
-                    refreshColor = Colors.blue[600]!;
-                    searchColor = Colors.blue[200]!;
-                    searchRadius = 50;
-                    arrowposition = refreshPosition;
-                    animationControl = Control.playReverse;
-                  });
-                }
-              }
-            },
-            onPointerUp: (event) {
-              if (searchRadius == 70) {
-                setState(() {
-                  searchVisible = true;
-                  searchRadius = 50;
-                });
-                searchFocusNode.requestFocus();
-              } else {
-                setState(() {
-                  searchVisible = false;
-                });
-              }
-            },
+            onPointerMove: (event) => handleSwipeGesture(event),
+            onPointerUp: (event) => handleGestureOver(event),
             child: VxBox(
                 child: HStack([
               const Icon(Icons.inbox, size: 46, color: Colors.blue),
