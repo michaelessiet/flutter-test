@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
 import 'package:widgettest/store/store.dart';
+import 'package:widgettest/widgets/parallaxnft_widget.dart';
 import 'package:widgettest/widgets/pulltorefreshorsearch_widget.dart';
 import 'package:widgettest/widgets/timer_widget.dart';
 
@@ -40,8 +41,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // MyStore store = VxState.store;
 
-    return const Scaffold(
-      body:  TimerWidget() 
+    return  Scaffold(
+      appBar: VxAppBar(
+        backgroundColor: Colors.transparent, 
+        elevation: 0,
+      ),
+      body:  const ParallaxNFT() 
     );
   }
 }

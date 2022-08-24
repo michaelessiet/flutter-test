@@ -14,52 +14,34 @@ class ParallaxNFT extends StatefulWidget {
 
 class _ParallaxNFTState extends State<ParallaxNFT>
     with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late AnimationController _controller2;
   double xAngle = 0;
+  double prevXAngle = 0;
   double yAngle = 0;
+  double prevYAngle = 0;
   double zAngle = 0;
+  double prevZAngle = 0;
+  final double squareSize = 350;
   final streamsub = <StreamSubscription<dynamic>>[];
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 100));
-    _controller2 = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 100));
 
     streamsub.add(accelerometerEvents.listen((event) {
       setState(() {
+        prevXAngle = xAngle;
         xAngle = event.x;
+        prevYAngle = yAngle;
         yAngle = double.parse(event.y.toString());
+        prevZAngle = zAngle;
         zAngle = double.parse(event.z.toString());
       });
-      if (xAngle.sign == -1) {
-        _controller2.animateTo((xAngle * -1 / 10),
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.easeInOut);
-      } else {
-        _controller2.animateTo((xAngle / 10),
-            duration: const Duration(milliseconds: 50),
-            curve: Curves.easeInOut);
-      }
-      if (zAngle.sign == -1) {
-        _controller.animateTo((zAngle * -1 / 20),
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeInOut);
-      } else {
-        _controller.animateTo((zAngle / 20),
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeInOut);
-      }
     }));
   }
 
   @override
   void dispose() {
     super.dispose();
-    _controller.dispose();
     for (final sub in streamsub) {
       sub.cancel();
     }
@@ -67,28 +49,51 @@ class _ParallaxNFTState extends State<ParallaxNFT>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          return AnimatedBuilder(
-              animation: _controller2,
-              builder: (context, _) {
-                return Transform(
-                  origin: const Offset(150, 0),
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, .001)
-                    ..rotateX(zAngle.sign == -1
-                        ? _controller.value
-                        : -_controller.value)
-                    ..rotateY(xAngle.sign == -1
-                        ? _controller2.value
-                        : -_controller2.value),
-                  child: VxBox().rounded.shadow3xl.red100.width(300).height(300).make(),
-                );
-              });
-        },
-      ),
-    );
+    return Column(children: [
+      Center(
+        child: TweenAnimationBuilder(
+            tween: Tween(begin: prevXAngle, end: xAngle),
+            duration: const Duration(milliseconds: 400),
+            builder: (context, double xValue, _) {
+              return TweenAnimationBuilder(
+                  tween: Tween(begin: prevZAngle, end: zAngle),
+                  duration: const Duration(milliseconds: 400),
+                  builder: (context, double zValue, _) {
+                    return [
+                      Transform(
+                          origin: Offset(squareSize/2, squareSize/2),
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.003)
+                            ..rotateX(-zValue / 10)
+                            ..rotateY(xValue / 10),
+                          child: VxBox().rounded.width(300).height(300).make()),
+                      Transform(
+                          origin: const Offset(150, 150),
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.002)
+                            ..rotateX(-zValue / 10)
+                            ..rotateY(xValue / 10),
+                          child: VxBox()
+                              .rounded
+                              .withShadow([
+                                BoxShadow(
+                                    color: const Color.fromARGB(106, 244, 117, 54),
+                                    blurRadius: 50,
+                                    spreadRadius: 5,
+                                    offset: Offset(xValue * 8, zValue * 8)),
+                                const BoxShadow(
+                                  color: Color.fromARGB(116, 0, 0, 0),
+                                  blurRadius: 20,
+                                )
+                              ])
+                              .red400
+                              .width(squareSize)
+                              .height(squareSize)
+                              .make())
+                    ].zStack();
+                  });
+            }),
+      )
+    ]);
   }
 }
